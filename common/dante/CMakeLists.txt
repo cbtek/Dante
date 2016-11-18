@@ -6,16 +6,22 @@ set(CURR_TARGET dante)
 set(CURR_TARGET_SOURCES "${CURR_TARGET}_SOURCES")
 set(CURR_TARGET_HEADERS"${CURR_TARGET}_HEADERS")
 include_directories(inc)
-include_directories(src)
+include_directories(inc/platform/msbuild)
+include_directories(inc/platform/cmake)
 
 if (WIN32)
-    if (MINGW)
-        add_definitions(-std=c++11)
+    if (MSVC)
+
+    else()
+        set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11")
+        set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11")
+        set(CMAKE_CXX_FLAGS_DEBUG  "-std=c++11")
     endif()
+
 else()
-    if (GCC)
-        add_definitions(-std=c++11)
-    endif()
+    set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11")
+    set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11")
+    set(CMAKE_CXX_FLAGS_DEBUG  "-std=c++11")
 endif()
 
 if (${ENABLE_DANTE_UNIT_TESTS})
@@ -25,8 +31,13 @@ endif()
 #==============================================================================
 # Include Source Files
 #==============================================================================
-file(GLOB CURR_TARGET_SOURCES "src/*.cpp")
-file(GLOB CURR_TARGET_HEADERS "inc/*.h*")
+file(GLOB CURR_TARGET_SOURCES "src/*.cpp"
+                              "src/platform/msbuild/*.cpp"
+                              "src/platform/cmake/*.cpp")
+
+file(GLOB CURR_TARGET_HEADERS "inc/*.h*"
+                              "inc/platform/msbuild/*.h*"
+                              "inc/platform/cmake/*.h*")
 
 #==============================================================================
 # Add Library
@@ -36,3 +47,5 @@ add_library(${CURR_TARGET}
             ${CURR_TARGET_SOURCES}
             ${CURR_TARGET_HEADERS})
 
+add_dependencies(${CURR_TARGET}
+                 common_utils)

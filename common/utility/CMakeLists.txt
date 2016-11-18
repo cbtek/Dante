@@ -8,14 +8,20 @@ set(CURR_TARGET_HEADERS"${CURR_TARGET}_HEADERS")
 include_directories(inc)
 include_directories(src)
 
+
 if (WIN32)
-    if (MINGW)
-        add_definitions(-std=c++11)
+    if (MSVC)
+
+    else()
+        set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11")
+        set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11")
+        set(CMAKE_CXX_FLAGS_DEBUG  "-std=c++11")
     endif()
+
 else()
-    if (GCC)
-        add_definitions(-std=c++11)
-    endif()
+    set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11")
+    set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11")
+    set(CMAKE_CXX_FLAGS_DEBUG  "-std=c++11")
 endif()
 
 if (${ENABLE_COMMON_UTILS_UNIT_TESTS})
