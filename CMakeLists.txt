@@ -4,41 +4,21 @@
 
 cmake_minimum_required(VERSION 3.0)
 project(Dante)
-
-
-if (WIN32)
-    if (MSVC)
-
-    else()
-        set(CMAKE_CXX_FLAGS_RELEASE "-g -Wl,--no-as-needed -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0")
-        set(CMAKE_CXX_FLAGS_DEBUG "-g -Wl,--no-as-needed -std=c++11  -D_GLIBCXX_USE_CXX11_ABI=0")
-    endif()
-
-else()
-    set(CMAKE_CXX_FLAGS_RELEASE "-g -Wl,--no-as-needed -std=c++11 -pthread -fPIC -ldl -D_GLIBCXX_USE_CXX11_ABI=0")
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -Wl,--no-as-needed -std=c++11 -pthread -fPIC -ldl -D_GLIBCXX_USE_CXX11_ABI=0")
-endif()
-
-set(LIBRARY_TYPE STATIC)
-
 get_filename_component(PROJECT_ROOT ${CMAKE_CURRENT_BINARY_DIR} PATH)
 
+set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+include(${CMAKE_MODULE_PATH}/flags.cmake)
+include(${CMAKE_MODULE_PATH}/build.cmake)
+
+set(LIBRARY_TYPE STATIC)
 set (ENABLE_COMMON_UTILS_UNIT_TESTS ON)
 
 if (WIN32)
     set (PLATFORM WIN32)
 endif()
 
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_ROOT}/bin/debug")
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_ROOT}/bin/debug")
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_ROOT}/bin/debug")
-ELSE()
-        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_ROOT}/bin/release")
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_ROOT}/bin/release")
-        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_ROOT}/bin/release")
-ENDIF()
-
 include_directories("${PROJECT_SOURCE_DIR}/common")
 add_subdirectory("${PROJECT_SOURCE_DIR}/common/utility")
 add_subdirectory("${PROJECT_SOURCE_DIR}/common/dante")
+add_subdirectory("${PROJECT_SOURCE_DIR}/products/DanteExample")

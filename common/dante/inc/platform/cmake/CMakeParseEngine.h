@@ -56,19 +56,13 @@ class CMakeParseEngine :public ParseEngine
     void parse(const std::string &topLevelCMakeFile);
 
     /**
-     * @brief getParseNodes
+     * @brief getProjectNodes
      * @return
      */
-    std::vector<ParseNode> getParseNodes() const;
-
-
-
+     void buildProjectNodeTreeList(std::vector<ProjectNodeTree> &);
 
 	//! Destructor
 	~CMakeParseEngine();	
-
-    private:
-
 };
 }}}}}//end namespace
 

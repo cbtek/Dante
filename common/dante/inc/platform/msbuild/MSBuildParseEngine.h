@@ -28,6 +28,10 @@ SOFTWARE.
 #define _CBTEK_COMMON_DANTE_PLATFORM_MSBuild_MSBuildPARSEENGINE_H
 
 #include "dante/inc/ParseEngine.hpp"
+#include "dante/inc/ProjectNodeTree.hpp"
+
+#include <map>
+#include <set>
 
 namespace cbtek {
 namespace common {
@@ -36,7 +40,7 @@ namespace platform {
 namespace msbuild {
 
 
-class MSBuildParseEngine :public ParseEngine
+class MSBuildParseEngine : public ParseEngine
 {
 public:
     //! Constructor for MSBuildParseEngine
@@ -49,23 +53,86 @@ public:
      * @brief getId
      * @return
      */
-    std::string getId() const;
+    virtual std::string getId() const;
 
     /**
      * @brief parse
      */
-    void parse(const std::string &topLevelSolutionFile);
+    virtual void parse(const std::string & inputFile);
 
     /**
-     * @brief getParseNodes
+     * @brief getProjectNodeTreeList
      * @return
      */
-    std::vector<ParseNode> getParseNodes() const;
+    void buildProjectNodeTreeList(std::vector<ProjectNodeTree> &);
 
+    /**
+     * @brief createDOT
+     * @param filename
+     * @param tree
+     */
+    void createDOT(const std::string & filename,
+                   const ProjectNodeTree & tree);
 
 	//! Destructor
     ~MSBuildParseEngine();
+private:
+    std::map<std::string,ProjectNode> m_parseNodeMap;
+    std::map<size_t, std::vector<int> > m_orderedProjectNodeMap;
+    std::vector<std::set<int> > m_buildPoolSetVector;
+    std::map<int, std::map<int, size_t> > m_projectPoolAssignmentMap;
+    std::map<std::string,ProjectNodeTree> m_projectNodeTreeMap;
+    std::map<int, std::string>  m_indexIdMap;
+    std::map<std::string, int>  m_idIndexMap;
 
+    /**
+     * @brief parseSLN
+     * @param url
+     */
+    void parseSLN(const std::string &url);
+
+    /**
+     * @brief parseCXProj
+     * @param node
+     * @return
+     */
+    bool parseCXProj(ProjectNode &node);
+
+    /**
+     * @brief adjustDependencyPoolAssignment
+     * @param poolId
+     * @param lastPool
+     * @param nodesIn
+     * @param currentPool
+     */
+    void adjustDependencyPoolAssignment(size_t poolId, const std::set<int> &lastPool,
+                                        std::vector<int> &nodesIn,
+                                        std::set<int> &currentPool);
+
+    /**
+     * @brief checkOtherPools
+     * @param index
+     * @return
+     */
+    size_t checkOtherPools(int index) const;
+
+    /**
+     * @brief createDepedencyTree
+     * @param node
+     * @param level
+     */
+    void createDepedencyTree(ProjectNodeTree &node,
+                             int level);
+
+    /**
+     * @brief createDOT
+     * @param node
+     * @param out
+     * @param level
+     */
+    void createDOT(const ProjectNodeTree & node,
+                   std::ostringstream & out,
+                   int level);
 };
 }}}}}//end namespace
 

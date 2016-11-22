@@ -874,5 +874,56 @@ inline int deleteFolder(const std::string &dirPath)
 #endif
 
 }
+
+static inline std::string getParentPath(const std::string & path, int count = 1)
+{
+    std::string testPath = StringUtils::toUpperTrimmed(path);
+    bool isWindowsPath = (testPath.size() > 1 &&
+                          testPath[1] == ':'  &&
+                          testPath[0] >= 'A'  &&
+                          testPath[0] <= 'Z');
+
+
+    bool isWindowsNetworkPath = StringUtils::startsWith(StringUtils::trimmed(path),"\\\\");
+    std::vector<std::string> pathItems;
+    std::string finalPath = path;
+
+    std::string seperator = "/";
+
+    if (isWindowsNetworkPath)
+    {
+        finalPath = StringUtils::replace(path,"\\\\","network:");
+    }
+
+    StringUtils::replaceInPlace(finalPath,"\\",seperator);
+    StringUtils::split(finalPath,seperator,pathItems);
+    StringUtils::clean(pathItems);
+    int stop = 0;
+    if (isWindowsNetworkPath || isWindowsPath)
+    {
+        stop = 1;
+    }
+
+    for (size_t a1 = 0;a1<count;++a1)
+    {
+        if (pathItems.size() > stop)
+        {
+            pathItems.pop_back();
+        }
+    }
+    std::string output;
+    seperator = (StringUtils::contains(path,"\\") &&
+                !StringUtils::contains(path,"/")?"\\":"/");
+
+    if (!isWindowsPath && !isWindowsNetworkPath)
+    {
+        output=seperator;
+    }
+    if (isWindowsNetworkPath && pathItems.size() > 0)
+    {
+        pathItems[0] = StringUtils::replace(pathItems[0],"network:","\\\\");
+    }
+    return output+StringUtils::toString(pathItems,seperator);
+}
 }}}}
 #endif // _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_

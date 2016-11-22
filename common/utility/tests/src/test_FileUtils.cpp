@@ -83,3 +83,46 @@ TEST_CASE("Testing FileUtils::copy", "[utility::FileUtils]" )
     FileUtils::deleteFile("test-copy.tmp");
     REQUIRE(dataIn == data);
 }
+
+TEST_CASE("Testing FileUtils::getParentPath", "[utility::FileUtils]" )
+{
+    std::string winPath="C:\\My Documents\\Some\\Stupid\\Windows\\File.ext";
+    std::string winNetworkPath="\\\\netdrive.us.com\\My Documents\\Some\\Stupid\\Windows\\File.ext";
+    std::string normalPath = "/usr/opt/running/server/php";
+    std::string mixPath = "\\usr/opt/running\\server/php";
+
+    REQUIRE(FileUtils::getParentPath(winPath) ==
+            "C:\\My Documents\\Some\\Stupid\\Windows");
+
+    REQUIRE(FileUtils::getParentPath(winPath,2) ==
+            "C:\\My Documents\\Some\\Stupid");
+
+    REQUIRE(FileUtils::getParentPath(winPath,200) =="C:");
+
+    REQUIRE(FileUtils::getParentPath(normalPath) ==
+            "/usr/opt/running/server");
+
+    REQUIRE(FileUtils::getParentPath(normalPath,2) ==
+            "/usr/opt/running");
+
+    REQUIRE(FileUtils::getParentPath(normalPath,200) =="/");
+
+
+    REQUIRE(FileUtils::getParentPath(mixPath) ==
+            "/usr/opt/running/server");
+
+    REQUIRE(FileUtils::getParentPath(mixPath,2) ==
+            "/usr/opt/running");
+
+    REQUIRE(FileUtils::getParentPath(winNetworkPath) ==
+            "\\\\netdrive.us.com\\My Documents\\Some\\Stupid\\Windows");
+
+
+    REQUIRE(FileUtils::getParentPath(winNetworkPath,3) ==
+            "\\\\netdrive.us.com\\My Documents\\Some");
+
+    REQUIRE(FileUtils::getParentPath(winNetworkPath,200) ==
+            "\\\\netdrive.us.com");
+
+
+}

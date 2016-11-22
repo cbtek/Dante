@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef _CBTEK_COMMON_DANTE_PARSEENGINE_H
 #define _CBTEK_COMMON_DANTE_PARSEENGINE_H
 
-#include "ParseNode.h"
+#include "ProjectNodeTree.hpp"
 
 #include <vector>
 #include <string>
@@ -36,7 +36,7 @@ namespace cbtek {
 namespace common {
 namespace dante {
 
-class ParseEngine 
+class ParseEngine
 {
 public:
 
@@ -52,13 +52,13 @@ public:
     virtual void parse(const std::string & inputFile) = 0;
 
     /**
-     * @brief getParseNodes
+     * @brief getProjectNodeTreeList
      * @return
      */
-    virtual std::vector<ParseNode> getParseNodes() const = 0;
+    virtual void buildProjectNodeTreeList(std::vector<ProjectNodeTree> &) = 0;
 
     //! Virtual Destructor
-	virtual ~ParseEngine(){}	
+    virtual ~ParseEngine(){}
 };
 }}}//end namespace
 

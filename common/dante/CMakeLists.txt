@@ -9,20 +9,7 @@ include_directories(inc)
 include_directories(inc/platform/msbuild)
 include_directories(inc/platform/cmake)
 
-if (WIN32)
-    if (MSVC)
-
-    else()
-        set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11")
-        set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11")
-        set(CMAKE_CXX_FLAGS_DEBUG  "-std=c++11")
-    endif()
-
-else()
-    set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11")
-    set(CMAKE_CXX_FLAGS_DEFAULT "-std=c++11")
-    set(CMAKE_CXX_FLAGS_DEBUG  "-std=c++11")
-endif()
+include(${CMAKE_MODULE_PATH}/flags.cmake)
 
 if (${ENABLE_DANTE_UNIT_TESTS})
     add_subdirectory(tests)

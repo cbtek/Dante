@@ -48,6 +48,8 @@ namespace common {
 namespace utility {
 namespace StringUtils {
 
+
+
 /**
 * @brief Converts wide string to upper-case
 * @param Reference to the wide string to convert
@@ -1515,6 +1517,66 @@ inline size_t removeAllThatDoNotContain(std::vector<std::string> & vecOut,
             }
     }
     return totalRemoved;
+}
+
+static inline size_t countOccurences(const std::string & input,
+                                     const std::string & strToCount,
+                                     bool caseSensitive = c_DEFAULT_CASE_SENSITIVE)
+{
+    size_t size = strToCount.size();
+    size_t count = 0;
+    for (size_t a1 = size;a1<input.size();a1++)
+    {
+        std::string strToCompare = input.substr(a1-size,size);
+        if (caseSensitive)
+        {
+            if (strToCompare == strToCount)
+            {
+                ++count;
+            }
+        }
+        else
+        {
+            if (StringUtils::toUpper(strToCompare) ==
+                StringUtils::toUpper(strToCount))
+            {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+
+
+static inline std::string toString(const std::vector<std::string> & stringItems,
+                                   const std::string &seperator)
+{
+    std::ostringstream out;
+    size_t count = stringItems.size();
+
+    for (const std::string & str : stringItems)
+    {
+        out << str << ((count > 1) ? seperator : "") ;
+        --count;
+    }
+    return out.str();
+}
+
+static inline std::string toString(const std::vector<std::string> & stringItems,
+                       const std::string & prefixString,
+                       const std::string & postfixString,
+                       const std::string &seperator)
+{
+    std::ostringstream out;
+    size_t count = stringItems.size();
+
+    for (const std::string & str : stringItems)
+    {
+        out <<prefixString<< str <<postfixString << ((count > 1) ? seperator : "") ;
+        --count;
+    }
+    return out.str();
 }
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

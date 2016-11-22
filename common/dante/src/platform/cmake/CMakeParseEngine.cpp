@@ -50,7 +50,7 @@ void CMakeParseEngine::parse(const std::string & topLevelCMakeFile)
 
 }
 
-std::vector<ParseNode> CMakeParseEngine::getParseNodes() const
+void CMakeParseEngine::buildProjectNodeTreeList(std::vector<ProjectNodeTree> &)
 {
 
 }

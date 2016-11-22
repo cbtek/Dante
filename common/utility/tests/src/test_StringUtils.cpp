@@ -105,3 +105,14 @@ TEST_CASE("Testing StringUtils::eraseFromVector","[utility::StringUtils]")
     REQUIRE(test[1]=="world");
 
 }
+
+TEST_CASE("Testing StringUtils::countOccurences","[utility::StringUtils]")
+{
+    std::string str1 = "The Quick quick brown fox quickly jumped over the super duper super wall.";
+    std::string str2 ="ABCDEFGGGHHIJKLMABJGGAB";
+    REQUIRE(StringUtils::countOccurences(str1,"quick",false) == 3);
+    REQUIRE(StringUtils::countOccurences(str1,"quick",true) == 2);
+    REQUIRE(StringUtils::countOccurences(str1,"Quick",true) == 1);
+    REQUIRE(StringUtils::countOccurences(str2,"G",false) == 5);
+    REQUIRE(StringUtils::countOccurences(str2,"g",true) == 0);
+}

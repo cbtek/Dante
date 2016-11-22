@@ -32,12 +32,17 @@ SOFTWARE.
 #include "dante/inc/platform/cmake/CMakeParseEngine.h"
 
 using namespace cbtek::common::utility;
+using namespace cbtek::common::dante;
 using namespace cbtek::common::dante::platform::msbuild;
 using namespace cbtek::common::dante::platform::cmake;
-int main(int argc , char ** argv)
+
+int main(int argc, char ** argv)
 {       
-    CMakeParseEngine pe;
+    MSBuildParseEngine pe;
     pe.parse("D:/GitRepos/IMEA_11.1/Products/Build/IMEAProducts.sln");
+    std::vector<ProjectNodeTree> nodeTreeList;
+    pe.buildProjectNodeTreeList(nodeTreeList);
+
     return 0;
 }
 

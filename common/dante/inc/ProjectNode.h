@@ -1,5 +1,5 @@
 /*
-    ParseNode.h
+    ProjectNode.h
     
 MIT License
 
@@ -28,20 +28,21 @@ SOFTWARE.
 #define _CBTEK_COMMON_DANTE_PARSENODE_H
 
 #include <string>
+#include <set>
 
 namespace cbtek {
 namespace common {
 namespace dante {
 
 
-class ParseNode 
+class ProjectNode
 {
 	public:
-	//! Constructor for ParseNode
+    //! Constructor for ProjectNode
 	/*!
-		Detailed description for ParseNode
+        Detailed description for ProjectNode
 	*/
-	ParseNode();
+    ProjectNode();
 
     /**
     * @brief Setter for m_id
@@ -59,7 +60,7 @@ class ParseNode
     * @brief Setter for m_projectFilename
     * @param Value to replace m_projectFilename
     */
-    void setProjectFilename(const std::string & value);
+    void setUrl(const std::string & value);
 
 
     /**
@@ -78,17 +79,34 @@ class ParseNode
     * @brief Getter for m_projectFilename
     * @return Return copy of m_projectFilename
     */
-    const std::string & getProjectFilename() const;
+    const std::string & getUrl() const;
 
+    /**
+     * @brief addDependencyId
+     * @param dependentId
+     */
+    void addDependencyId(const std::string & dependentId);
 
+    /**
+     * @brief getNumDependencyIds
+     * @return
+     */
+    size_t getNumDependencyIds() const;
+
+    /**
+     * @brief getDependencyIds
+     * @return
+     */
+    const std::set<std::string> getDependencyIds() const;
 
 	//! Destructor
-	~ParseNode();	
+    ~ProjectNode();
 
-    private:
+private:
+    std::set<std::string> m_dependencies;
     std::string m_id;
     std::string m_name;
-    std::string m_projectFilename;
+    std::string m_url;
 
 };
 }}}//end namespace
