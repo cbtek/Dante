@@ -131,7 +131,8 @@ private:
      * @param level
      */
     void createDOT(const ProjectNodeTree & node,
-                   std::ostringstream & out,
+                   std::ostream &out,
+                   std::set<std::string> *treeNodeOutputCache,
                    int level);
 };
 }}}}}//end namespace

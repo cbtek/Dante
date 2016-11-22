@@ -346,7 +346,8 @@ size_t MSBuildParseEngine::checkOtherPools(int index) const
 }
 
 void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
-                             std::ostringstream & out,
+                             std::ostream & out,
+                             std::set<std::string> * treeNodeOutputCache,
                              int level)
 {
     auto itFindId = m_indexIdMap.find(node.value);
@@ -359,7 +360,14 @@ void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
             return;
         }
         const ProjectNode & parentNode = itFindNode->second;
-        out <<"    " << parentNode.getName() <<";"<<std::endl;
+        std::string output;
+        output = "    " + parentNode.getName() +";\n";
+        auto itFindInCache = treeNodeOutputCache->find(output);
+        if (itFindInCache == treeNodeOutputCache->end())
+        {
+            out << output;
+            treeNodeOutputCache->insert(output);
+        }
         for (const ProjectNodeTree & child : node.children)
         {
 
@@ -374,12 +382,19 @@ void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
                     return;
                 }
                 ProjectNode & childNode = itFindChildNode->second;
-                out <<"    " << parentNode.getName() <<" -> "<<childNode.getName()<<";"<<std::endl;
+                output = "    " + parentNode.getName() +" -> "+childNode.getName()+";"+";\n";
+                auto itFindInChildCache = treeNodeOutputCache->find(output);
+                if (itFindInChildCache == treeNodeOutputCache->end())
+                {
+                    out << output;
+                    treeNodeOutputCache->insert(output);
+                }
+
             }
         }
         for (const ProjectNodeTree & child : node.children)
         {
-            createDOT(child,out,level+1);
+            createDOT(child,out,treeNodeOutputCache,level+1);
         }
     }
 }
@@ -387,8 +402,9 @@ void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
 void MSBuildParseEngine::createDOT(const std::string & filename,
                              const ProjectNodeTree & tree)
 {
-    std::ostringstream out;
+    std::ofstream fout(filename.c_str());
     auto itFindId = m_indexIdMap.find(tree.value);
+    std::set<std::string> * treeNodeOutputCache = new std::set<std::string>();
     if (itFindId!=m_indexIdMap.end())
     {
         std::string treeId=itFindId->second;
@@ -398,14 +414,14 @@ void MSBuildParseEngine::createDOT(const std::string & filename,
             return;
         }
         ProjectNode & node = itFindNode->second;
-        out << "digraph "<<StringUtils::toUpper(node.getName())<<std::endl;
-        out << "{"<<std::endl;
-        createDOT(tree,out,0);
-        out << "}"<<std::endl;
-        std::ofstream fout(filename.c_str());
-        fout << out.str();
-        fout.close();
+        fout << "digraph "<<StringUtils::toUpper(node.getName())<<std::endl;
+        fout << "{"<<std::endl;
+        createDOT(tree,fout,treeNodeOutputCache,0);
+        fout << "}"<<std::endl;
     }
+    fout.close();
+    delete treeNodeOutputCache;
+    treeNodeOutputCache = 0;
 }
 
 
