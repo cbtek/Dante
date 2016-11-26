@@ -33,6 +33,8 @@ SOFTWARE.
 #include "utility/inc/XMLUtils.h"
 #include "utility/inc/TimeUtils.hpp"
 #include "utility/inc/Exception.hpp"
+#include "utility/inc/SystemUtils.hpp"
+
 
 using namespace cbtek::common::utility;
 
@@ -57,10 +59,8 @@ std::string MSBuildParseEngine::getId() const
 
 void MSBuildParseEngine::parse(const std::string &topLevelSolutionFile)
 {
-    std::uint64_t start = TimeUtils::getMillisecondsNow();
-    parseSLN(topLevelSolutionFile);
-    std::cerr << TimeUtils::getMillisecondsNow()-start <<std::endl;
 
+    parseSLN(topLevelSolutionFile);
     int index = 0;
     for (const auto & it : m_parseNodeMap)
     {
@@ -97,8 +97,6 @@ void MSBuildParseEngine::parse(const std::string &topLevelSolutionFile)
             }
         }
     }
-
-    int x = 0;
 }
 
 void MSBuildParseEngine::buildProjectNodeTreeList(std::vector<ProjectNodeTree> & treeNodes)
@@ -115,26 +113,7 @@ void MSBuildParseEngine::buildProjectNodeTreeList(std::vector<ProjectNodeTree> &
             treeNodes.push_back(node);
             std::cerr << it.second.getId()<<":"<<(--count)<<std::endl;
         }
-    }
-
-    std::set<std::string> filenames;
-    for (const auto & tree : treeNodes)
-    {
-        auto itFindId = m_indexIdMap.find(tree.value);
-
-        if (itFindId!=m_indexIdMap.end())
-        {
-            const auto & itFindNode = m_parseNodeMap.find(itFindId->second);
-            if (itFindNode != m_parseNodeMap.end())
-            {
-                std::string filename = itFindNode->second.getName();
-                filenames.insert(filename);
-                size_t count = filenames.count(filename);
-                filename+="_"+StringUtils::toString(count)+".dot";
-                createDOT(filename,tree);
-            }
-        }
-    }
+    }   
 }
 
 void MSBuildParseEngine::createDepedencyTree(
@@ -368,6 +347,33 @@ void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
             out << output;
             treeNodeOutputCache->insert(output);
         }
+        std::string rank;
+        if (node.children.size() > 1)
+        {
+            for (const ProjectNodeTree & child : node.children)
+            {
+                auto itFindChildId = m_indexIdMap.find(child.value);
+                if (itFindChildId!=m_indexIdMap.end())
+                {
+
+                    std::string childId=itFindChildId->second;
+                    const auto & itFindChildNode = m_parseNodeMap.find(childId);
+                    if (itFindChildNode == m_parseNodeMap.end())
+                    {
+                        return;
+                    }
+                    ProjectNode & childNode = itFindChildNode->second;
+                    rank += " \""+childNode.getName() +"\";";
+                }
+            }
+        }
+
+        if (!rank.empty())
+        {
+            rank = "    { rank = same;"+rank+"};\n";
+            //out << rank;
+        }
+
         for (const ProjectNodeTree & child : node.children)
         {
 
@@ -382,7 +388,7 @@ void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
                     return;
                 }
                 ProjectNode & childNode = itFindChildNode->second;
-                output = "    " + parentNode.getName() +" -> "+childNode.getName()+";"+";\n";
+                output = "    " + parentNode.getName() +" -> "+childNode.getName()+";\n";
                 auto itFindInChildCache = treeNodeOutputCache->find(output);
                 if (itFindInChildCache == treeNodeOutputCache->end())
                 {
@@ -395,6 +401,173 @@ void MSBuildParseEngine::createDOT(const ProjectNodeTree & node,
         for (const ProjectNodeTree & child : node.children)
         {
             createDOT(child,out,treeNodeOutputCache,level+1);
+        }
+    }
+}
+
+
+void MSBuildParseEngine::generateDOTs(const std::string &dotsPath,
+                                      const std::string &pngsPath,
+                                      const std::vector<ProjectNodeTree> & treeNodes)
+{
+    if (!FileUtils::isDirectory(dotsPath))
+    {
+        FileUtils::createDirectory(dotsPath);
+    }
+
+    if (!FileUtils::isDirectory(pngsPath))
+    {
+        FileUtils::createDirectory(pngsPath);
+    }
+
+    std::set<std::string> filenames;
+    for (const auto & tree : treeNodes)
+    {
+        auto itFindId = m_indexIdMap.find(tree.value);
+
+        if (itFindId!=m_indexIdMap.end())
+        {
+            const auto & itFindNode = m_parseNodeMap.find(itFindId->second);
+            if (itFindNode != m_parseNodeMap.end())
+            {
+                std::string filename = itFindNode->second.getName();
+                filenames.insert(filename);
+                size_t count = filenames.count(filename);
+                filename+="_"+StringUtils::toString(count)+".dot";
+                std::string outputFilename = FileUtils::buildFilePath(pngsPath,filename+".png");
+                std::string inputFilename = FileUtils::buildFilePath(dotsPath,filename);
+                createDOT(inputFilename,tree);
+                std::string command = "dot -Tpng \""+inputFilename+"\" -o \""+outputFilename+"\"";
+                std::cerr << command<<std::endl;
+                SystemUtils::execute(command);
+
+            }
+        }
+    }
+}
+
+void MSBuildParseEngine::createD3CSV(const std::string &filename,
+                                     const ProjectNodeTree &tree)
+{
+    std::ofstream fout(filename.c_str());
+    auto itFindId = m_indexIdMap.find(tree.value);
+    std::set<std::string> * treeNodeOutputCache = new std::set<std::string>();
+    if (itFindId!=m_indexIdMap.end())
+    {
+        std::string treeId=itFindId->second;
+        auto itFindNode = m_parseNodeMap.find(treeId);
+        if (itFindNode == m_parseNodeMap.end())
+        {
+            return;
+        }
+        ProjectNode & node = itFindNode->second;
+        fout << "id,value"<<std::endl;
+        std::string output;
+        createD3CSV(tree,fout,treeNodeOutputCache,output,0);
+    }
+    fout.close();
+    delete treeNodeOutputCache;
+    treeNodeOutputCache = 0;
+}
+
+void MSBuildParseEngine::createD3CSV(const ProjectNodeTree &node,
+                                     std::ostream &out,
+                                     std::set<std::string> *treeNodeOutputCache,
+                                     const std::string & output,
+                                     int level)
+{
+    auto itFindId = m_indexIdMap.find(node.value);
+    std::string newOutput = output;
+    if (itFindId!=m_indexIdMap.end())
+    {
+        std::string parentId=itFindId->second;
+        const auto & itFindNode = m_parseNodeMap.find(parentId);
+        if (itFindNode == m_parseNodeMap.end())
+        {
+            return;
+        }
+        const ProjectNode & parentNode = itFindNode->second;
+        newOutput += parentNode.getName();
+        auto itFindInCache = treeNodeOutputCache->find(newOutput);
+        if (itFindInCache == treeNodeOutputCache->end())
+        {
+            out << newOutput << std::endl;
+            treeNodeOutputCache->insert(newOutput);
+        }
+
+//        for (const ProjectNodeTree & child : node.children)
+//        {
+
+//            auto itFindChildId = m_indexIdMap.find(child.value);
+//            if (itFindChildId!=m_indexIdMap.end())
+//            {
+
+//                std::string childId=itFindChildId->second;
+//                const auto & itFindChildNode = m_parseNodeMap.find(childId);
+//                if (itFindChildNode == m_parseNodeMap.end())
+//                {
+//                    return;
+//                }
+//                ProjectNode & childNode = itFindChildNode->second;
+//                std::string newChildOutput = newOutput + ".";
+//                auto itFindInChildCache = treeNodeOutputCache->find(newChildOutput);
+//                if (itFindInChildCache == treeNodeOutputCache->end())
+//                {
+//                    out << newChildOutput << std::endl;
+//                    treeNodeOutputCache->insert(newChildOutput);
+//                }
+
+//            }
+//        }
+
+        for (const ProjectNodeTree & child : node.children)
+        {
+            auto itFindChildId = m_indexIdMap.find(child.value);
+            if (itFindChildId!=m_indexIdMap.end())
+            {
+
+                std::string childId=itFindChildId->second;
+                const auto & itFindChildNode = m_parseNodeMap.find(childId);
+                if (itFindChildNode == m_parseNodeMap.end())
+                {
+                    return;
+                }
+                ProjectNode & childNode = itFindChildNode->second;
+                std::string newChildOutput = newOutput + ".";
+                createD3CSV(child,out,treeNodeOutputCache,newChildOutput,level+1);
+            }
+        }
+    }
+}
+
+void MSBuildParseEngine::generateD3CSVs(const std::string &csvsPath,
+                                        const std::vector<ProjectNodeTree> &treeNodes)
+{
+    if (!FileUtils::isDirectory(csvsPath))
+    {
+        FileUtils::createDirectory(csvsPath);
+    }
+
+    std::set<std::string> filenames;
+    for (const auto & tree : treeNodes)
+    {
+        auto itFindId = m_indexIdMap.find(tree.value);
+
+        if (itFindId!=m_indexIdMap.end())
+        {
+            const auto & itFindNode = m_parseNodeMap.find(itFindId->second);
+            if (itFindNode != m_parseNodeMap.end())
+            {
+                std::string filename = itFindNode->second.getName();
+                filenames.insert(filename);
+                size_t count = filenames.count(filename);
+                filename+="_"+StringUtils::toString(count)+".csv";
+                std::string outputFilename = FileUtils::buildFilePath(csvsPath,filename);
+                std::cerr <<"Creating D3CSV at \""<<outputFilename<<"\"..."<<std::endl;
+                std::uint64_t start = TimeUtils::getMillisecondsNow();
+                createD3CSV(outputFilename,tree);
+                std::cerr << "Done in "<<(TimeUtils::getMillisecondsNow()-start)<<"ms"<<std::endl;
+            }
         }
     }
 }
@@ -416,6 +589,9 @@ void MSBuildParseEngine::createDOT(const std::string & filename,
         ProjectNode & node = itFindNode->second;
         fout << "digraph "<<StringUtils::toUpper(node.getName())<<std::endl;
         fout << "{"<<std::endl;
+        fout << "    compound=true;"<<std::endl;
+        fout << "    concentrate=true;"<<std::endl;
+        fout << "    ranksep=2.25;"<<std::endl;
         createDOT(tree,fout,treeNodeOutputCache,0);
         fout << "}"<<std::endl;
     }

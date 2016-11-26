@@ -74,7 +74,22 @@ public:
     void createDOT(const std::string & filename,
                    const ProjectNodeTree & tree);
 
-	//! Destructor
+
+
+    /**
+     * @brief generateDOTs
+     * @param dotsPath
+     * @param pngsPath
+     * @param nodes
+     */
+    void generateDOTs(const std::string & dotsPath,
+                      const std::string & pngsPath, const std::vector<ProjectNodeTree> &nodes);
+
+
+    void generateD3CSVs(const std::string & csvsPath,
+                        const std::vector<ProjectNodeTree> &treeNodes);
+
+    //! Destructor
     ~MSBuildParseEngine();
 private:
     std::map<std::string,ProjectNode> m_parseNodeMap;
@@ -134,6 +149,29 @@ private:
                    std::ostream &out,
                    std::set<std::string> *treeNodeOutputCache,
                    int level);
+
+
+    /**
+     * @brief createD3CSV
+     * @param filename
+     * @param node
+     */
+    void createD3CSV(const std::string & filename,
+                     const ProjectNodeTree &tree);
+
+    /**
+     * @brief createD3CSV
+     * @param node
+     * @param out
+     * @param treeNodeOutputCache
+     * @param level
+     */
+    void createD3CSV(const ProjectNodeTree & node,
+                     std::ostream &out,
+                     std::set<std::string> *treeNodeOutputCache,
+                     const std::string &output,
+                     int level);
+
 };
 }}}}}//end namespace
 

@@ -39,10 +39,15 @@ using namespace cbtek::common::dante::platform::cmake;
 int main(int argc, char ** argv)
 {       
     MSBuildParseEngine pe;
+    std::uint64_t start = TimeUtils::getMillisecondsNow();
+    std::cerr<<"Parsing Solutions..."<<std::endl;
     pe.parse("D:/GitRepos/IMEA_11.1/Products/Build/IMEAProducts.sln");
+    std::cerr << TimeUtils::getMillisecondsNow()-start <<std::endl;
     std::vector<ProjectNodeTree> nodeTreeList;
     pe.buildProjectNodeTreeList(nodeTreeList);
-
+    std::cerr << "Done in "<<TimeUtils::getMillisecondsNow()-start<<"ms"<<std::endl;
+    std::cerr<<"Generating output data..."<<std::endl;
+    pe.generateD3CSVs("csv",nodeTreeList);
     return 0;
 }
 
