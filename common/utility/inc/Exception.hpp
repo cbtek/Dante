@@ -31,6 +31,7 @@ SOFTWARE.
 #include <string>
 
 #define EXCEPTION_TAG "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): "
+#define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): \n"
 
 namespace cbtek{
 namespace common{

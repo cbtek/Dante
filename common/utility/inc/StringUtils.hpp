@@ -48,8 +48,6 @@ namespace common {
 namespace utility {
 namespace StringUtils {
 
-
-
 /**
 * @brief Converts wide string to upper-case
 * @param Reference to the wide string to convert
@@ -1519,6 +1517,25 @@ inline size_t removeAllThatDoNotContain(std::vector<std::string> & vecOut,
     return totalRemoved;
 }
 
+
+static inline void removeNonAlphaNumericInPlace(std::string & srcStr)
+{
+    for (int a1=srcStr.size()-1;a1>=0;--a1)
+    {
+        if (!std::isalnum(srcStr[a1]))
+        {
+            srcStr.erase(srcStr.begin()+a1);
+        }
+    }
+}
+
+static inline std::string removeNonAlphaNumeric(const std::string & srcStr)
+{
+    std::string str = srcStr;
+    removeNonAlphaNumericInPlace(str);
+    return str;
+}
+
 static inline size_t countOccurences(const std::string & input,
                                      const std::string & strToCount,
                                      bool caseSensitive = c_DEFAULT_CASE_SENSITIVE)
@@ -1546,7 +1563,6 @@ static inline size_t countOccurences(const std::string & input,
     }
     return count;
 }
-
 
 
 static inline std::string toString(const std::vector<std::string> & stringItems,
@@ -1578,5 +1594,6 @@ static inline std::string toString(const std::vector<std::string> & stringItems,
     }
     return out.str();
 }
+
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

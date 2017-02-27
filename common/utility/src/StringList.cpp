@@ -560,6 +560,5 @@ StringList &StringList::operator <<(const double &val)
     return *this;
 }
 
-
 }}}//namespace
 

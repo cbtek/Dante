@@ -36,3 +36,17 @@ add_library(${CURR_TARGET}
 
 add_dependencies(${CURR_TARGET}
                  common_utils)
+
+
+#==============================================================================
+# Install 
+#==============================================================================
+if (WIN32)
+
+else()
+    if (ENABLE_DANTE_STATIC_LIB)
+            install(TARGETS ${CURR_TARGET} ARCHIVE DESTINATION lib)
+    else()
+            install(TARGETS ${CURR_TARGET} LIBRARY DESTINATION lib)
+    endif()
+endif()

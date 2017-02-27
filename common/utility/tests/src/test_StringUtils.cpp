@@ -106,13 +106,9 @@ TEST_CASE("Testing StringUtils::eraseFromVector","[utility::StringUtils]")
 
 }
 
-TEST_CASE("Testing StringUtils::countOccurences","[utility::StringUtils]")
+
+TEST_CASE("Testing StringUtils::removeNonAlphaNumeric","[utility::StringUtils]")
 {
-    std::string str1 = "The Quick quick brown fox quickly jumped over the super duper super wall.";
-    std::string str2 ="ABCDEFGGGHHIJKLMABJGGAB";
-    REQUIRE(StringUtils::countOccurences(str1,"quick",false) == 3);
-    REQUIRE(StringUtils::countOccurences(str1,"quick",true) == 2);
-    REQUIRE(StringUtils::countOccurences(str1,"Quick",true) == 1);
-    REQUIRE(StringUtils::countOccurences(str2,"G",false) == 5);
-    REQUIRE(StringUtils::countOccurences(str2,"g",true) == 0);
+    std::string str ="~!@#$%^&T*()_+{}|\"{}|\\:;'\"<,>.?/-=\r\r\n\f\t~E!@#$%^&*()_+{}|\"{}|\\:;'\"<,>.?/-=\r\rS\n\fT\t";
+    REQUIRE(StringUtils::removeNonAlphaNumeric(str) == "TEST");
 }

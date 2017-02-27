@@ -55,6 +55,7 @@ public:
 
     const std::string & getElementName() const;
     const std::string & getElementData() const;
+
     std::string getAttributeValue(const std::string & attributeName,bool caseSensitive=false) const;
     std::string getAttributeName(size_t index)const;
     std::string getAttributeValue(size_t index) const;    
@@ -93,6 +94,16 @@ public:
         m_Attributes.push_back(
                     std::make_pair(attributeName,
                                               StringUtils::toString(attributeValue)));
+    }
+
+    template <typename Number>
+    Number getAttributeValueAsType(const std::string& attributeName) const
+    {
+        Number valueNumber;
+        std::string valueStr = getAttributeValue(attributeName);
+        std::stringstream in(valueStr);
+        in>>valueNumber;
+        return valueNumber;
     }
 
 protected:
